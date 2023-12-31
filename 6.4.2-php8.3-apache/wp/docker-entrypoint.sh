@@ -122,6 +122,11 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 			fi
 		done
 	fi
+
+    # Because TiDB Serverless do not support utf8mb4_unicode_520_ci for now (2023.12.31)
+    if [[ $WORDPRESS_DB_HOST == *tidbcloud.com* ]] && [[ $WORDPRESS_DB_COLLATE == utf8mb4_unicode_ci ]]; then
+        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /var/www/html/wp-includes/class-wpdb.php
+    fi
 fi
 
 # Instead of wp-cron with real cron

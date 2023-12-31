@@ -10,7 +10,7 @@ ENV WORDPRESS_DB_COLLATE="utf8mb4_unicode_ci"
 ENV WORDPRESS_TABLE_PREFIX="wp_"
 
 # Configure PHP
-ENV PHP_MEMORY_LIMIT="128M"
+ENV PHP_MEMORY_LIMIT="256M"
 ENV PHP_UPLOAD_MAX_FILESIZE="50M"
 ENV PHP_POST_MAX_SIZE="50M"
 ENV PHP_MAX_EXECUTION_TIME="60"
@@ -31,9 +31,14 @@ COPY wp/opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
+# TiDbServerless
+COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
+
 WORKDIR /var/www/html
 
-RUN sed -i 's#Listen 80#Listen 8080#g' /etc/apache2/ports.conf; \
+RUN apt-get update && \
+    apt-get install -y cron && \
+    sed -i 's#Listen 80#Listen 8080#g' /etc/apache2/ports.conf; \
     mkdir -p /data/wp-content; \
     chown -R www-data:www-data /data/wp-content; \
     chown -R www-data:www-data /var/www/html; \
@@ -44,18 +49,6 @@ RUN sed -i 's#Listen 80#Listen 8080#g' /etc/apache2/ports.conf; \
     echo "define( 'DISABLE_WP_CRON', true );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "require_once ABSPATH . 'wp-settings.php';" >> /usr/src/wordpress/wp-config-docker.php
-
-# Use pg4wp instead of mysql 
-# https://github.com/PostgreSQL-For-Wordpress/postgresql-for-wordpress/archive/refs/tags/v3.0.zip
-# Don't put the pg4wp in wp-content/plugins, because it may be deleted by user.
-# The v3.0 has a bug, so we fixed it, and copy the directory to image.
-# Bug issue: https://github.com/PostgreSQL-For-Wordpress/postgresql-for-wordpress/issues/87
-COPY pg4wp /usr/src/wordpress/wp-content/pg4wp
-
-RUN apt-get update && \
-    apt-get install -y zip cron libpq-dev && \
-    docker-php-ext-install pgsql pdo pdo_pgsql && \
-    cp /usr/src/wordpress/wp-content/pg4wp/db.php /usr/src/wordpress/wp-content/db.php 
 
 # Expose the port apache is reachable on
 EXPOSE 8080
