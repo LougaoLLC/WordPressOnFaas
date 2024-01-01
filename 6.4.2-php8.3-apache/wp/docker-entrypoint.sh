@@ -125,6 +125,6 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 fi
 
 # Instead of wp-cron with real cron
-echo "*/10 * * * * curl http://127.0.0.1/wp-cron.php?doing_wp_cron >/dev/null 2>&1" | crontab -
+echo "*/10 * * * * curl http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1" | crontab -
 
 exec "$@"
