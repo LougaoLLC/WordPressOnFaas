@@ -52,6 +52,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
+# TiDB Serverless
+COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
+
 WORKDIR /var/www/html
 
 RUN mkdir -p /data/wp-content; \
@@ -60,17 +63,18 @@ RUN mkdir -p /data/wp-content; \
     chown -R www-data:www-data /var/www/html /run /var/lib/nginx /var/log/nginx; \
     mkdir -p /var/cache/nginx/fastcgi; \ 
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
-    cp /usr/src/wordpress/wp-config-docker.php /usr/src/wordpress/wp-config.php; \
-    chown www-data:www-data /usr/src/wordpress/wp-config.php; \
-    sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config.php; \
-    echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> /usr/src/wordpress/wp-config.php; \
-    echo "define( 'WP_AUTO_UPDATE_CORE', false );" >> /usr/src/wordpress/wp-config.php; \
-    echo "define( 'DISABLE_WP_CRON', true );" >> /usr/src/wordpress/wp-config.php; \
-    echo "define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" >> /usr/src/wordpress/wp-config.php; \
-    echo "require_once ABSPATH . 'wp-settings.php';" >> /usr/src/wordpress/wp-config.php
+    sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
+    echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> /usr/src/wordpress/wp-config-docker.php; \
+    echo "define( 'WP_AUTO_UPDATE_CORE', false );" >> /usr/src/wordpress/wp-config-docker.php; \
+    echo "define( 'DISABLE_WP_CRON', true );" >> /usr/src/wordpress/wp-config-docker.php; \
+    echo "define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" >> /usr/src/wordpress/wp-config-docker.php; \
+    echo "require_once ABSPATH . 'wp-settings.php';" >> /usr/src/wordpress/wp-config-docker.php
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
 
 USER www-data
 
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

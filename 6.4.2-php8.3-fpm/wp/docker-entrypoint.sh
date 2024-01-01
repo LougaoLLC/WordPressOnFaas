@@ -127,9 +127,6 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
     mkdir -p /var/www/html/crontab
     echo "*/10 * * * * wget -q -O - http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1 " >> /var/www/html/crontab/root
     crond -b -l 8 -c /var/www/html/crontab
-
-    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-    exit $?
 fi
 
 exec "$@"
