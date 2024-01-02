@@ -60,8 +60,8 @@ WORKDIR /var/www/html
 RUN mkdir -p /data/wp-content; \
     chown -R www-data:www-data /data/wp-content; \
     mkdir -p /run; \
-    chown -R www-data:www-data /var/www/html /run /var/lib/nginx /var/log/nginx; \
     mkdir -p /var/cache/nginx/fastcgi; \ 
+    chown -R www-data:www-data /var/www/html /run /var/lib/nginx /var/log/nginx /var/cache/nginx; \
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
     sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> /usr/src/wordpress/wp-config-docker.php; \
