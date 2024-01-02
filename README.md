@@ -15,4 +15,10 @@ See more:
 * [TrafeX/docker-php-nginx](https://github.com/TrafeX/docker-php-nginx/blob/master/README.md)
 * [gioamato/stateless-wordpress](https://github.com/gioamato/stateless-wordpress/tree/master)
 
+## What does it do?
+
+* TiDB Serverless for WordPress (TiDB Serverless does not support `utf8mb4_unicode_520_ci` collation, so we use `utf8mb4_unicode_ci` instead)
+* Ali FunctionCompute for WordPress (Health check api, Startup Probe, Nginx FastCGI Cache, PHP-FPM, etc.)
+* XMLRPC disabled (Optional, it's disabled by default)
+* wp-content mounted to NAS
 

@@ -52,6 +52,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
+ENV DISABLE_XMLRPC="true"
+
 # TiDB Serverless
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
 

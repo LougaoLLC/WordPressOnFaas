@@ -127,6 +127,20 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
     mkdir -p /var/www/html/crontab
     echo "*/10 * * * * wget -q -O - http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1 " >> /var/www/html/crontab/root
     crond -b -l 8 -c /var/www/html/crontab
+
+    # Disable xmlrpc
+    if [ "$DISABLE_XMLRPC" = "true" ]; then
+        echo '# Block WordPress xmlrpc.php requests
+<Files xmlrpc.php>
+order deny,allow
+deny from all
+</Files>' >> /var/www/html/.htaccess
+    fi
+
+    # TiDB Serverless does not support utf8mb4_unicode_520_ci for now (2023.12.31)
+    if [[ $WORDPRESS_DB_HOST == *tidbcloud.com* ]] && [[ $WORDPRESS_DB_COLLATE == utf8mb4_unicode_ci ]]; then
+        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /var/www/html/wp-includes/class-wpdb.php
+    fi
 fi
 
 exec "$@"
