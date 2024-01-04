@@ -1,5 +1,7 @@
 ### WordPress for FAAS
 
+**NOTE: This branch is not ready for production use.**
+
 **Components:**
 - Supervisord
 - Nginx and FastCGI Cache
