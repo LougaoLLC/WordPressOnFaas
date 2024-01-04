@@ -1,17 +1,18 @@
-FROM --platform=linux/amd64 wordpress:6.4.2-php8.3-fpm-alpine
+FROM wordpress:6.4.2-php8.3-fpm-alpine
+
+# Lambda Adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.3.2 /lambda-adapter /opt/extensions/lambda-adapter
 
 RUN apk add --no-cache \
     nginx \
     socat \
-    fcgiwrap \
-    spawn-fcgi \
     supervisor
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
 COPY ng/conf.d /etc/nginx/conf.d/
 COPY ng/docker-entrypoint.sh /usr/local/bin/docker-entrypoint-nginx.sh
-COPY ng/wait-fpm.sh /var/www/wait-fpm.sh
+COPY ng/wait-fpm.sh /usr/local/bin/wait-fpm.sh
 
 # Configure Database
 ENV WORDPRESS_DB_NAME=""
@@ -37,7 +38,7 @@ ENV PHP_OPCACHE_MEMORY_CONSUMPTION="128"
 ENV PHP_OPCACHE_MAX_ACCELERATED_FILES="10000"
 ENV PHP_OPCACHE_REVALIDATE_FREQUENCY="0"
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0"
-ENV PHP_OPCACHE_PRELOAD="/var/www/html/preload.php"
+ENV PHP_OPCACHE_PRELOAD="/usr/src/wordpress/preload.php"
 COPY wp/opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
 
 # Configure PHP-FPM
@@ -57,13 +58,10 @@ ENV DISABLE_XMLRPC="true"
 # TiDB Serverless
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
 
-WORKDIR /var/www/html
-
-RUN mkdir -p /data/wp-content; \
-    chown -R www-data:www-data /data/wp-content; \
-    mkdir -p /run; \
-    mkdir -p /var/cache/nginx/fastcgi; \ 
-    chown -R www-data:www-data /var/www/html /run /var/lib/nginx /var/log/nginx /var/cache/nginx; \
+RUN mkdir -p /mnt/wordpress; \
+    chown -R www-data:www-data /mnt/wordpress; \
+    mkdir -p /tmp/var/www/html /tmp/var/cache/nginx/fastcgi /tmp/var/lib/nginx /tmp/var/cache/nginx; \ 
+    chown -R www-data:www-data /tmp/var/www/html /tmp/var/lib/nginx /tmp/var/cache/nginx; \
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
     sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> /usr/src/wordpress/wp-config-docker.php; \
@@ -71,6 +69,8 @@ RUN mkdir -p /data/wp-content; \
     echo "define( 'DISABLE_WP_CRON', true );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "require_once ABSPATH . 'wp-settings.php';" >> /usr/src/wordpress/wp-config-docker.php
+
+WORKDIR /
 
 # Expose the port nginx is reachable on
 EXPOSE 8080

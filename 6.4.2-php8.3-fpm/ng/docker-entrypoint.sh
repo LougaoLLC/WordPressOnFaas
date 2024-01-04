@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-/usr/bin/spawn-fcgi -s /run/fcgiwrap.socket -M 766 /usr/bin/fcgiwrap
+mkdir -p /tmp/var/cache/nginx/fastcgi /tmp/var/lib/nginx /tmp/var/cache/nginx
+
+wait-fpm.sh 
 
 exec "$@"

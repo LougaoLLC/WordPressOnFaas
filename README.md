@@ -1,4 +1,4 @@
-### WordPress for Ali FunctionCompute
+### WordPress for FAAS
 
 **Components:**
 - Supervisord
@@ -17,11 +17,11 @@
 1. **TiDB Serverless Integration:**
    - Integrates TiDB Serverless for WordPress. Note: TiDB Serverless doesn't support the `utf8mb4_unicode_520_ci` collation; hence, `utf8mb4_unicode_ci` is used.
 
-2. **Ali FunctionCompute Implementation:**
-   - Leverages Ali FunctionCompute for WordPress, incorporating features like Health Check API, Startup Probe, Nginx FastCGI Cache, PHP-FPM, etc.
+2. **FAAS Implementation:**
+   - Leverages FAAS for WordPress, incorporating features like Health Check API, Startup Probe, Nginx FastCGI Cache, PHP-FPM, etc.
 
 3. **XMLRPC Handling:**
-   - Optional disabling of XMLRPC (default setting is disabled). This is primarily aimed at reducing client-side calls. Since many websites do not require this functionality, reducing client-side calls can effectively lower costs, considering that Function Compute is billed based on requests.
+   - Optional disabling of XMLRPC (default setting is disabled). This is primarily aimed at reducing client-side calls. Since many websites do not require this functionality, reducing client-side calls can effectively lower costs, considering that faas is billed based on requests.
 
 4. **wp-content on NAS:**
    - Mounts the `wp-content` directory to Network Attached Storage (NAS), providing shared and persistent storage.

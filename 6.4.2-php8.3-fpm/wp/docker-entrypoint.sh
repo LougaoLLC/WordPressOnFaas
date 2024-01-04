@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+mkdir -p /tmp/var/www/html
+cd /tmp/var/www/html
+
+# create link to wp-content
+rm -rf /tmp/var/www/html/wp-content || true
+# TODO
+mkdir -p /tmp/wordpress
+ln -s /tmp/wordpress wp-content
+
+
 if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 	uid="$(id -u)"
 	gid="$(id -g)"
@@ -24,11 +34,6 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 		user="$uid"
 		group="$gid"
 	fi
-
-    # create link to wp-content
-    rm -rf /var/www/html/wp-content || true
-    mkdir -p /data/wp-content 
-    ln -s /data/wp-content wp-content 
 
     # copy /usr/src/wordpress/wp-content to ./wp-content using tar
     if [ "`ls -A wp-content`" = "" ]; then
@@ -124,9 +129,9 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 	fi
 
     # Instead of wp-cron with real cron
-    mkdir -p /var/www/html/crontab
-    echo "*/10 * * * * wget -q -O - http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1 " >> /var/www/html/crontab/root
-    crond -b -l 8 -c /var/www/html/crontab
+    mkdir -p /tmp/var/www/html/crontab
+    echo "*/10 * * * * wget -q -O - http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1 " >> /tmp/var/www/html/crontab/root
+    crond -b -l 8 -c /tmp/var/www/html/crontab
 
     # Disable xmlrpc
     if [ "$DISABLE_XMLRPC" = "true" ]; then
@@ -134,13 +139,15 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 <Files xmlrpc.php>
 order deny,allow
 deny from all
-</Files>' >> /var/www/html/.htaccess
+</Files>' >> /tmp/var/www/html/.htaccess
     fi
 
     # TiDB Serverless does not support utf8mb4_unicode_520_ci for now (2023.12.31)
     if [[ $WORDPRESS_DB_HOST == *tidbcloud.com* ]] && [[ $WORDPRESS_DB_COLLATE == utf8mb4_unicode_ci ]]; then
-        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /var/www/html/wp-includes/class-wpdb.php
+        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /tmp/var/www/html/wp-includes/class-wpdb.php
     fi
 fi
+
+cd -
 
 exec "$@"
