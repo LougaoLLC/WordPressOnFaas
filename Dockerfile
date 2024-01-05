@@ -3,8 +3,7 @@ FROM wordpress:6.4.2-php8.3-fpm-alpine
 # Lambda Adapter
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.3.2 /lambda-adapter /opt/extensions/lambda-adapter
 
-RUN apk add --no-cache \
-    nginx
+RUN apk add --no-cache nginx
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
@@ -51,10 +50,8 @@ ENV DISABLE_XMLRPC="true"
 # TiDB Serverless
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
 
-RUN mkdir -p /mnt/wordpress; \
-    chown -R nobody:nobody /mnt/wordpress; \
-    mkdir -p /tmp/var/www/html /tmp/var/cache/nginx/fastcgi /tmp/var/lib/nginx /tmp/var/cache/nginx; \ 
-    chown -R nobody:nobody /tmp/var/www/html /tmp/var/lib/nginx /tmp/var/cache/nginx; \
+RUN mkdir -p /tmp/var/www/html /tmp/var/cache/nginx/fastcgi /tmp/var/lib/nginx /tmp/var/cache/nginx /mnt/wp-content; \ 
+    chown -R nobody:nobody /tmp/var/www/html /tmp/var/lib/nginx /tmp/var/cache/nginx /mnt/wp-content; \
     echo -e "fs.suid_dumpable=0 \nkernel.core_pattern=|/bin/false" > /etc/sysctl.conf; \
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
     sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
@@ -70,6 +67,8 @@ WORKDIR /
 EXPOSE 8080
 
 USER nobody
+
+VOLUME /mnt/wp-content
 
 COPY --chown=nobody:nobody bootstrap /opt/bootstrap
 ENTRYPOINT /opt/bootstrap

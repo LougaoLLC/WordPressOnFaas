@@ -5,11 +5,11 @@ mkdir -p /tmp/var/www/html
 cd /tmp/var/www/html
 
 # create link to wp-content
+if [ ! -d /mnt/wp-content ]; then
+    mkdir -p /mnt/wp-content
+fi
 rm -rf /tmp/var/www/html/wp-content || true
-# TODO
-mkdir -p /tmp/wordpress
-ln -s /tmp/wordpress wp-content
-
+ln -s /mnt/wp-content wp-content
 
 if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 	uid="$(id -u)"
