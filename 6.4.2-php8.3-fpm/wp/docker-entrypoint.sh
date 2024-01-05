@@ -17,8 +17,8 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 	if [ "$uid" = '0' ]; then
 		case "$1" in
 			apache2*)
-				user="${APACHE_RUN_USER:-www-data}"
-				group="${APACHE_RUN_GROUP:-www-data}"
+				user="${APACHE_RUN_USER:-nobody}"
+				group="${APACHE_RUN_GROUP:-nobody}"
 
 				# strip off any '#' symbol ('#1000' is valid syntax for Apache)
 				pound='#'
@@ -26,8 +26,8 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 				group="${group#$pound}"
 				;;
 			*) # php-fpm
-				user='www-data'
-				group='www-data'
+				user='nobody'
+				group='nobody'
 				;;
 		esac
 	else
@@ -147,7 +147,5 @@ deny from all
         sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /tmp/var/www/html/wp-includes/class-wpdb.php
     fi
 fi
-
-cd -
 
 exec "$@"

@@ -4,15 +4,12 @@ FROM wordpress:6.4.2-php8.3-fpm-alpine
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.3.2 /lambda-adapter /opt/extensions/lambda-adapter
 
 RUN apk add --no-cache \
-    nginx \
-    socat \
-    supervisor
+    nginx
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
 COPY ng/conf.d /etc/nginx/conf.d/
 COPY ng/docker-entrypoint.sh /usr/local/bin/docker-entrypoint-nginx.sh
-COPY ng/wait-fpm.sh /usr/local/bin/wait-fpm.sh
 
 # Configure Database
 ENV WORDPRESS_DB_NAME=""
@@ -39,19 +36,15 @@ ENV PHP_OPCACHE_MAX_ACCELERATED_FILES="10000"
 ENV PHP_OPCACHE_REVALIDATE_FREQUENCY="0"
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0"
 ENV PHP_OPCACHE_PRELOAD="/usr/src/wordpress/preload.php"
-COPY wp/opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
 
 # Configure PHP-FPM
 COPY wp/www.conf /usr/local/etc/php-fpm.d/www.conf
-ENV PHP_FPM_USER="www-data"
-ENV PHP_FPM_GROUP="www-data"
-
-# Configure supervisord
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+ENV PHP_FPM_USER="nobody"
+ENV PHP_FPM_GROUP="nobody"
 
 # Configure WordPress
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
+COPY --chown=nobody:nobody wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
 ENV DISABLE_XMLRPC="true"
 
@@ -59,9 +52,10 @@ ENV DISABLE_XMLRPC="true"
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
 
 RUN mkdir -p /mnt/wordpress; \
-    chown -R www-data:www-data /mnt/wordpress; \
+    chown -R nobody:nobody /mnt/wordpress; \
     mkdir -p /tmp/var/www/html /tmp/var/cache/nginx/fastcgi /tmp/var/lib/nginx /tmp/var/cache/nginx; \ 
-    chown -R www-data:www-data /tmp/var/www/html /tmp/var/lib/nginx /tmp/var/cache/nginx; \
+    chown -R nobody:nobody /tmp/var/www/html /tmp/var/lib/nginx /tmp/var/cache/nginx; \
+    echo -e "fs.suid_dumpable=0 \nkernel.core_pattern=|/bin/false" > /etc/sysctl.conf; \
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
     sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> /usr/src/wordpress/wp-config-docker.php; \
@@ -75,8 +69,7 @@ WORKDIR /
 # Expose the port nginx is reachable on
 EXPOSE 8080
 
-USER www-data
+USER nobody
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+COPY --chown=nobody:nobody bootstrap /opt/bootstrap
+ENTRYPOINT /opt/bootstrap

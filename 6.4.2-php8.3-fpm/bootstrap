@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Fail on error
+set -e
+
+docker-entrypoint.sh php-fpm 
+
+exec docker-entrypoint-nginx.sh nginx -g 'daemon off;' -e /dev/stderr
