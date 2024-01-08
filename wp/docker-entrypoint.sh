@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if [ -z ${MY_WP_CONTENT_DIR} ]; then
+    echo "ERROR: MY_WP_CONTENT_DIR is not set. Please set the MY_WP_CONTENT_DIR environment variable."
+    exit 1;
+fi
+if [ ! -d "${MY_WP_CONTENT_DIR}" ]; then
+    echo "ERROR: ${MY_WP_CONTENT_DIR} does not exist. Please mount the wp-content volume."
+    exit 1;
+fi
+if [ ! -d "${MY_WP_WORKDIR}" ]; then
+    mkdir -p ${MY_WP_WORKDIR}
+fi
+cd ${MY_WP_WORKDIR}
+
 if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
     uid="$(id -u)"
     gid="$(id -g)"
@@ -26,9 +39,8 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
     fi
 
     # create link to wp-content
-    rm -rf /var/www/html/wp-content || true
-    mkdir -p /data/wp-content 
-    ln -s /data/wp-content wp-content 
+    rm -rf wp-content || true
+    ln -s ${MY_WP_CONTENT_DIR} wp-content 
 
     # copy /usr/src/wordpress/wp-content to ./wp-content using tar
     if [ "`ls -A wp-content`" = "" ]; then
@@ -125,11 +137,16 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 
     # TiDB Serverless does not support utf8mb4_unicode_520_ci for now (2023.12.31)
     if [[ $WORDPRESS_DB_HOST == *tidbcloud.com* ]] && [[ $WORDPRESS_DB_COLLATE == utf8mb4_unicode_ci ]]; then
-        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" /var/www/html/wp-includes/class-wpdb.php
+        sed -i "s#\$collate = 'utf8mb4_unicode_520_ci'#\$collate = 'utf8mb4_unicode_ci'#g" wp-includes/class-wpdb.php
     fi
 fi
 
-# Instead of wp-cron with real cron
-echo "*/10 * * * * curl http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1" | crontab -
+## Instead of wp-cron with real cron
+#echo "*/10 * * * * curl http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1" >> crontab_file
+#crontab crontab_file
+
+ps aux
+
+id
 
 exec "$@"

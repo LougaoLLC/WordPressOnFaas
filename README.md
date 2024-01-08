@@ -1,6 +1,6 @@
-# wordpress4fc
+# WordPressOnLambda
 
-Serverless WordPress For Ali FunctionCompute.
+Serverless WordPress On AWS Lambda.
 
 Include:
 
