@@ -12,7 +12,7 @@
 - [gioamato/stateless-wordpress](https://github.com/gioamato/stateless-wordpress/tree/master)
 - [pingcap/wordpress-tidb-plugin](https://github.com/pingcap/wordpress-tidb-plugin)
 
-## What WordPressOnFaas Achieves:
+## What does this docker image do?
 
 1. **TiDB Serverless Integration:**
    - Integrates TiDB Serverless for WordPress. Note: TiDB Serverless doesn't support the `utf8mb4_unicode_520_ci` collation; hence, `utf8mb4_unicode_ci` is used.
@@ -26,4 +26,8 @@
 4. **Efficient Cron Job Handling:**
    - Implements a real cron job in the container instead of using wp-cron. This optimization aims to reduce the cost associated with cold starts.
 
+**Note:** If you use TiDB as the wordpress database, you need to set tidb_enable_noop_functions to 1.
 
+```SET GLOBAL tidb_enable_noop_functions=1;```
+
+See more: [20133](https://github.com/pingcap/tidb/issues/20133)

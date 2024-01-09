@@ -4,8 +4,14 @@ RUN apk add --no-cache \
     nginx \
     socat \
     fcgiwrap \
-    spawn-fcgi \
-    php-redis
+    spawn-fcgi
+
+# Install php-redis extension
+RUN NPROC=$(getconf _NPROCESSORS_ONLN); \
+    mkdir -p /usr/src/php/ext; \
+    cd /usr/src/php/ext; pecl bundle redis; cd -; \
+    docker-php-ext-configure redis --enable-redis-igbinary --enable-redis-lzf; \
+    docker-php-ext-install -j${NPROC} redis
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
