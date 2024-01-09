@@ -1,11 +1,11 @@
-FROM --platform=linux/amd64 wordpress:6.4.2-php8.3-fpm-alpine
+FROM wordpress:6.4.2-php8.3-fpm-alpine
 
 RUN apk add --no-cache \
     nginx \
     socat \
     fcgiwrap \
     spawn-fcgi \
-    supervisor
+    php-redis
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
@@ -23,7 +23,7 @@ ENV WORDPRESS_DB_COLLATE="utf8mb4_unicode_ci"
 ENV WORDPRESS_TABLE_PREFIX="wp_"
 
 # Configure PHP
-ENV PHP_MEMORY_LIMIT="128M"
+ENV PHP_MEMORY_LIMIT="256M"
 ENV PHP_UPLOAD_MAX_FILESIZE="50M"
 ENV PHP_POST_MAX_SIZE="50M"
 ENV PHP_MAX_EXECUTION_TIME="60"
@@ -45,14 +45,12 @@ COPY wp/www.conf /usr/local/etc/php-fpm.d/www.conf
 ENV PHP_FPM_USER="www-data"
 ENV PHP_FPM_GROUP="www-data"
 
-# Configure supervisord
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 # Configure WordPress
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
-ENV DISABLE_XMLRPC="true"
+ENV WORDPRESS_MEMORY_LIMIT="450M"
+ENV MY_WP_CONTENT_DIR="/data/wp-content"
 
 # TiDB Serverless
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
@@ -70,6 +68,7 @@ RUN mkdir -p /data/wp-content; \
     echo "define( 'WP_AUTO_UPDATE_CORE', false );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'DISABLE_WP_CRON', true );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" >> /usr/src/wordpress/wp-config-docker.php; \
+    echo "define( 'WP_MEMORY_LIMIT', '${WORDPRESS_MEMORY_LIMIT}' );" >> /usr/src/wordpress/wp-config-docker.php; \
     echo "require_once ABSPATH . 'wp-settings.php';" >> /usr/src/wordpress/wp-config-docker.php
 
 # Expose the port nginx is reachable on
@@ -77,6 +76,6 @@ EXPOSE 8080
 
 USER www-data
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY bootstrap /usr/local/bin/bootstrap
+ENTRYPOINT ["bootstrap"]
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
