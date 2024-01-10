@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if [ -z ${MY_WP_CONTENT_DIR} ]; then
-    echo "ERROR: Please set the MY_WP_CONTENT_DIR environment variable."
-    exit 1;
-fi
-if [ ! -d "${MY_WP_CONTENT_DIR}" ]; then
-    echo "ERROR: ${MY_WP_CONTENT_DIR} does not exist. Please mount the wp-content volume."
-    exit 1;
-fi
-# create link to wp-content
-rm -rf wp-content
-ln -s ${MY_WP_CONTENT_DIR} wp-content 
-
 if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 	uid="$(id -u)"
 	gid="$(id -g)"
@@ -36,6 +24,18 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
 		user="$uid"
 		group="$gid"
 	fi
+
+    # create link to wp-content
+    if [ -z ${MY_WP_CONTENT_DIR} ]; then
+        echo "ERROR: Please set the MY_WP_CONTENT_DIR environment variable."
+        exit 1;
+    fi
+    if [ ! -d "${MY_WP_CONTENT_DIR}" ]; then
+        echo "ERROR: ${MY_WP_CONTENT_DIR} does not exist. Please mount the wp-content volume."
+        exit 1;
+    fi
+    rm -rf wp-content
+    ln -s ${MY_WP_CONTENT_DIR} wp-content 
 
     # copy /usr/src/wordpress/wp-content to ./wp-content using tar
     if [ "`ls -A wp-content`" = "" ]; then
