@@ -1,4 +1,6 @@
-FROM wordpress:6.4.2-php8.3-fpm
+#FROM wordpress:6.4.2-php8.3-fpm
+# Avoiding Docker Hub pull rate limits.
+FROM --platform=linux/amd64 registry-intl.us-east-1.aliyuncs.com/lougao-cloud/wordpress:6.4.2-php8.3-fpm
 
 RUN apt-get update; \
     apt-get install -y nginx socat fcgiwrap spawn-fcgi cron
