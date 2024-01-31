@@ -1,4 +1,4 @@
-FROM wordpress:6.4.2-php8.3-fpm-alpine
+FROM wordpress:6.4.2-php8.3-fpm
 
 RUN apk add --no-cache \
     nginx \
