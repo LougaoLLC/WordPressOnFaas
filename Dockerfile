@@ -1,10 +1,7 @@
 FROM wordpress:6.4.2-php8.3-fpm
 
-RUN apk add --no-cache \
-    nginx \
-    socat \
-    fcgiwrap \
-    spawn-fcgi
+RUN apt-get update; \
+    apt-get install -y nginx socat fcgiwrap spawn-fcgi cron
 
 # Install php-redis extension
 RUN NPROC=$(getconf _NPROCESSORS_ONLN); \
