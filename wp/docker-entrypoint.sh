@@ -31,8 +31,7 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
         exit 1;
     fi
     if [ ! -d "${MY_WP_CONTENT_DIR}" ]; then
-        echo "ERROR: ${MY_WP_CONTENT_DIR} does not exist. Please mount the wp-content volume."
-        exit 1;
+        mkdir -p ${MY_WP_CONTENT_DIR}
     fi
     rm -rf wp-content
     ln -s ${MY_WP_CONTENT_DIR} wp-content 
