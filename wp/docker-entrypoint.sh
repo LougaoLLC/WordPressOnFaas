@@ -132,7 +132,7 @@ if [[ "$1" == apache2* ]] || [ "$1" = 'php-fpm' ]; then
     # Instead of wp-cron with real cron
     mkdir -p crontab
     echo "*/10 * * * * wget -q -O - http://127.0.0.1:8080/wp-cron.php?doing_wp_cron >/dev/null 2>&1 " >> crontab/root
-    crond -b -l 8 -c $(pwd)/crontab
+    crontab crontab/root
 
     # TiDB Serverless does not support utf8mb4_unicode_520_ci for now (2023.12.31)
     if [[ $WORDPRESS_DB_HOST == *tidbcloud.com* ]] && [[ $WORDPRESS_DB_COLLATE == utf8mb4_unicode_ci ]]; then
