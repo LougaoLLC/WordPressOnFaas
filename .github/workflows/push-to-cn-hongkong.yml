@@ -32,4 +32,4 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          tags: lougao-cloud/cn-hongkong:${{ steps.get_version.outputs.VERSION }}
+          tags: registry.cn-hongkong.aliyuncs.com/lougao-cloud/cn-hongkong:${{ steps.get_version.outputs.VERSION }}

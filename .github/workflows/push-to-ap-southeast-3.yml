@@ -32,4 +32,4 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          tags: lougao-cloud/ap-southeast-3:${{ steps.get_version.outputs.VERSION }}
+          tags: registry.ap-southeast-3.aliyuncs.com/lougao-cloud/ap-southeast-3:${{ steps.get_version.outputs.VERSION }}

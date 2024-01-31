@@ -32,4 +32,4 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          tags: lougao-cloud/us-east-1:${{ steps.get_version.outputs.VERSION }}
+          tags: registry.us-east-1.aliyuncs.com/lougao-cloud/us-east-1:${{ steps.get_version.outputs.VERSION }}
