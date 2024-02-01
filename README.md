@@ -4,7 +4,7 @@
 - Nginx and FastCGI Cache
 - PHP-FPM and Opcache
 - WordPress
-- PHP Redis
+- PHP Redis Extension
 
 **References:**
 - [docker-library/wordpress](https://github.com/docker-library/wordpress/tree/ac65dab91d64f611e4fa89b5e92903e163d24572)
@@ -31,3 +31,18 @@
 ```SET GLOBAL tidb_enable_noop_functions=1;```
 
 See more: [20133](https://github.com/pingcap/tidb/issues/20133)
+
+## How to use this image
+
+ENV WORDPRESS_DB_NAME=""
+ENV WORDPRESS_DB_USER=""
+ENV WORDPRESS_DB_PASSWORD=""
+ENV WORDPRESS_DB_HOST=""
+
+```
+docker run -p 8080:8080 -v /host/path:/data -e WORDPRESS_DB_NAME=dbname WORDPRESS_DB_USER=dbuser WORDPRESS_DB_PASSWORD=dbpwd WORDPRESS_DB_HOST=dbhost:port lougaocloud/serverless-wp:6.4.2-php8.3-fpm-alpine-v0
+```
+
+We mount the /host/path to /data in the container, so that the wp-content directory can be stored.
+
+Then you can access WordPress at `http://localhost:8080` in a browser.
