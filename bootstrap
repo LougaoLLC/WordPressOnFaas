@@ -1,6 +1,11 @@
 #!/bin/bash
 
-docker-entrypoint.sh php-fpm
+if [[ "$1" == wordpress ]]; then
 
-exec docker-entrypoint-nginx.sh nginx -g 'daemon off;'
+    docker-entrypoint.sh php-fpm
+    
+    exec docker-entrypoint-nginx.sh nginx -g 'daemon off;'
 
+else
+    exec "$@"
+fi

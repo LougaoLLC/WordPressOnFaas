@@ -1,7 +1,10 @@
-FROM wordpress:6.4.2-php8.3-fpm
+FROM wordpress:6.4.2-php8.3-fpm-alpine
 
-RUN apt-get update; \
-    apt-get install -y nginx socat fcgiwrap spawn-fcgi cron
+RUN apk add --no-cache \
+     nginx \
+     socat \
+     fcgiwrap \
+     spawn-fcgi
 
 # Install php-redis extension
 RUN NPROC=$(getconf _NPROCESSORS_ONLN); \
@@ -81,4 +84,5 @@ USER www-data
 
 COPY bootstrap /usr/local/bin/bootstrap
 ENTRYPOINT ["bootstrap"]
+CMD ["wordpress"]
 
