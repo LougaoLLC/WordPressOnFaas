@@ -43,7 +43,6 @@ ENV PHP_OPCACHE_MEMORY_CONSUMPTION="128"
 ENV PHP_OPCACHE_MAX_ACCELERATED_FILES="10000"
 ENV PHP_OPCACHE_REVALIDATE_FREQUENCY="0"
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0"
-ENV PHP_OPCACHE_PRELOAD="/var/www/html/preload.php"
 COPY wp/opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
 
 # Configure PHP-FPM
@@ -53,7 +52,6 @@ ENV PHP_FPM_GROUP="www-data"
 
 # Configure WordPress
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-COPY --chown=www-data:www-data wp/preload.php ${PHP_OPCACHE_PRELOAD}
 
 ENV WORDPRESS_MEMORY_LIMIT="450M"
 ENV MY_WP_CONTENT_DIR="/data/wp-content"
