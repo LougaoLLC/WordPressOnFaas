@@ -56,6 +56,16 @@ COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENV WORDPRESS_MEMORY_LIMIT="450M"
 ENV MY_WP_CONTENT_DIR="/data/wp-content"
 
+# Generate WordPress salts from https://api.wordpress.org/secret-key/1.1/salt/
+ENV WORDPRESS_AUTH_KEY=""
+ENV WORDPRESS_SECURE_AUTH_KEY=""
+ENV WORDPRESS_LOGGED_IN_KEY=""
+ENV WORDPRESS_NONCE_KEY=""
+ENV WORDPRESS_AUTH_SALT=""
+ENV WORDPRESS_SECURE_AUTH_SALT=""
+ENV WORDPRESS_LOGGED_IN_SALT=""
+ENV WORDPRESS_NONCE_SALT=""
+
 # TiDB Serverless
 COPY tidb-serverless/tidb-compatibility.php /usr/src/wordpress/wp-content/mu-plugins/tidb-compatibility.php
 
