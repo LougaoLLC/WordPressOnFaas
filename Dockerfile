@@ -1,17 +1,21 @@
+# Pull in dependencies with composer
+FROM composer:2.5 as build
+COPY opentelemetry/composer.json ./
+RUN composer install --ignore-platform-reqs
+
 FROM wordpress:6.4.3-php8.3-fpm-alpine
+
+# install install-php-extensions by docker image
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 RUN apk add --no-cache \
      nginx \
      socat \
      fcgiwrap \
-     spawn-fcgi
+     spawn-fcgi 
 
-# Install php-redis extension
-RUN NPROC=$(getconf _NPROCESSORS_ONLN); \
-    mkdir -p /usr/src/php/ext; \
-    cd /usr/src/php/ext; pecl bundle redis; cd -; \
-    docker-php-ext-configure redis --enable-redis-igbinary --enable-redis-lzf; \
-    docker-php-ext-install -j${NPROC} redis
+# Install extensions
+RUN install-php-extensions opentelemetry-stable protobuf-stable redis-stable mongodb-stable
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
@@ -49,6 +53,20 @@ COPY wp/opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
 COPY wp/www.conf /usr/local/etc/php-fpm.d/www.conf
 ENV PHP_FPM_USER="www-data"
 ENV PHP_FPM_GROUP="www-data"
+
+# Configure OpenTelemetry
+COPY opentelemetry/otel.php.ini "$PHP_INI_DIR/conf.d/otel.php.ini"
+COPY --from=build /app/vendor /var/www/otel
+
+ENV OTEL_PHP_AUTOLOAD_ENABLED=true
+ENV OTEL_SERVICE_NAME="<your-service-name>"
+ENV OTEL_TRACES_EXPORTER=otlp
+ENV OTEL_METRICS_EXPORTER=none
+ENV OTEL_LOGS_EXPORTER=none
+ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="<endpoint>"
+ENV OTEL_EXPORTER_OTLP_HEADERS=Authentication="<token>"
+ENV OTEL_PROPAGATORS=baggage,tracecontext
 
 # Configure WordPress
 COPY wp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
