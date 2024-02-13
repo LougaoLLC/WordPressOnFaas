@@ -15,7 +15,7 @@ RUN apk add --no-cache \
      spawn-fcgi 
 
 # Install extensions
-RUN install-php-extensions opentelemetry-stable protobuf-stable redis-stable mongodb-stable
+RUN install-php-extensions opentelemetry-stable grpc-stable protobuf-stable redis-stable mongodb-stable
 
 # Configure nginx - default server
 COPY ng/nginx.conf /etc/nginx/nginx.conf
@@ -58,10 +58,11 @@ ENV PHP_FPM_GROUP="www-data"
 COPY opentelemetry/otel.php.ini "$PHP_INI_DIR/conf.d/otel.php.ini"
 COPY --from=build /app/vendor /var/www/otel
 
-ENV OTEL_PHP_AUTOLOAD_ENABLED=true
+ENV OTEL_PHP_AUTOLOAD_ENABLED=false
+ENV OTEL_PHP_INTERNAL_METRICS_ENABLED=false
 ENV OTEL_SERVICE_NAME="<your-service-name>"
 ENV OTEL_TRACES_EXPORTER=otlp
-ENV OTEL_METRICS_EXPORTER=none
+ENV OTEL_METRICS_EXPORTER=otlp
 ENV OTEL_LOGS_EXPORTER=none
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 ENV OTEL_EXPORTER_OTLP_ENDPOINT="<endpoint>"
@@ -93,6 +94,7 @@ RUN mkdir -p /data/wp-content; \
     chown -R www-data:www-data /data/wp-content; \
     mkdir -p /run; \
     mkdir -p /var/cache/nginx/fastcgi; \ 
+    chown -R www-data:www-data /var/www/otel; \
     chown -R www-data:www-data /var/www/html /run /var/lib/nginx /var/log/nginx /var/cache/nginx; \
     rm -rf /usr/local/etc/php-fpm.d/zz-docker.conf || true; \
     sed -i "s/^require_once ABSPATH . 'wp-settings.php';//g" /usr/src/wordpress/wp-config-docker.php; \
